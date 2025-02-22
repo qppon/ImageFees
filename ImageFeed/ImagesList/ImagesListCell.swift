@@ -6,9 +6,18 @@
 //
 import UIKit
 
+protocol ImagesListCellDelegate: AnyObject {
+    func cellDidTapLike(_ cell: ImagesListCell)
+}
+
 final class ImagesListCell: UITableViewCell {
     static let reuseIdentifier = "ImagesListCell"
+    var delegate: ImagesListCellDelegate?
     
+    
+    @IBAction private func didTapLikeButton(_ sender: Any) {
+        delegate?.cellDidTapLike(self)
+    }
     @IBOutlet var cellImage: UIImageView!
     @IBOutlet var likeButton: UIButton!
     @IBOutlet var dateLabel: UILabel!
@@ -19,5 +28,15 @@ final class ImagesListCell: UITableViewCell {
         self.likeButton.setImage(buttonImage, for: .normal)
         self.cellImage.image = image
         self.dateLabel.text = date
+    }
+    
+    override func prepareForReuse() {
+        super.prepareForReuse()
+        
+        cellImage.kf.cancelDownloadTask()
+    }
+    
+    func setIsLiked(isLiked: Bool) {
+        likeButton.setImage(UIImage(resource: isLiked ? .likedButtonOn : .likedButtonOff), for: .normal)
     }
 }

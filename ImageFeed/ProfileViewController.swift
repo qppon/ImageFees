@@ -9,6 +9,8 @@ import UIKit
 import Kingfisher
 
 final class ProfileViewController: UIViewController {
+    private let profileLogoutService = ProfileLogoutService.shared
+    
     private var profileImageServiceObserver: NSObjectProtocol?
     
     override func viewDidLoad() {
@@ -112,6 +114,27 @@ final class ProfileViewController: UIViewController {
     
     @objc
     private func didTapButton() {
+        let alert = UIAlertController(title: "Пока, пока!", message: "Уверены что хотите выйти?", preferredStyle: .alert)
         
+        let yesAction = UIAlertAction(title: "Да", style: .default) { _ in
+            self.profileLogoutService.logout()
+            
+            guard let window = UIApplication.shared.windows.first else {
+                assertionFailure("Invalid Configuration")
+                return
+            }
+            let authViewController = UIStoryboard(name: "Main", bundle: .main)
+                .instantiateViewController(withIdentifier: "AuthViewController")
+            window.rootViewController = authViewController
+            
+            UIView.transition(with: window, duration: 0.3, options: .transitionCrossDissolve, animations: {}, completion: nil)
+        }
+        
+        let noAction = UIAlertAction(title: "Нет", style: .default, handler: nil)
+        
+        alert.addAction(yesAction)
+        alert.addAction(noAction)
+        
+        present(alert, animated: true, completion: nil)
     }
 }

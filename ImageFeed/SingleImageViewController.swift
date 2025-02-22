@@ -8,14 +8,17 @@
 import UIKit
 
 final class SingleImageViewController: UIViewController {
+    
+    var imageURL: URL?
+    
     var image: UIImage? {
-            didSet {
-                guard isViewLoaded, let image else { return }
-                imageView.image = image
-                imageView.frame.size = image.size
-                rescaleAndCenterImageInScrollView(image: image)
-            }
+        didSet {
+            guard isViewLoaded, let image else { return }
+            imageView.image = image
+            imageView.frame.size = image.size
+            rescaleAndCenterImageInScrollView(image: image)
         }
+    }
     
     @IBOutlet private var scrollView: UIScrollView!
     @IBOutlet private var imageView: UIImageView!
@@ -54,10 +57,32 @@ final class SingleImageViewController: UIViewController {
         scrollView.minimumZoomScale = 0.1
         scrollView.maximumZoomScale = 1.25
         
-        guard let image else { return }
-        imageView.image = image
-        imageView.frame.size = image.size
-        rescaleAndCenterImageInScrollView(image: image)
+        if let url = imageURL {
+            UIBlockingProgressHUD.show()
+            let placeholderImage = UIImage(named: "vvv")
+            imageView.image = placeholderImage
+            imageView.contentMode = .center
+            
+            
+            imageView.kf.setImage(
+                with: url,
+                placeholder: placeholderImage,
+                options: nil,
+                progressBlock: nil,
+                completionHandler: { [weak self] result in
+                    DispatchQueue.main.async {
+                        switch result {
+                        case .success(let value):
+                            UIBlockingProgressHUD.dismiss()
+                            self?.image = value.image
+                        case .failure:
+                            UIBlockingProgressHUD.dismiss()
+                            print("error")
+                        }
+                    }
+                }
+            )
+        }
     }
 }
 
